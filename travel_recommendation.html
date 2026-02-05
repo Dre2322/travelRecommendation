@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<!--
+  File: travel_recommendation.html
+  Author: Andres Melendez
+  Purpose:
+    TravelBloom single-page travel recommendation website:
+      - Home page: background image, intro, search results
+      - About Us page: company info + team members
+      - Contact Us page: contact form
+      - Navbar with search on Home only (hidden on About/Contact per rubric)
+      - Animated page transitions + active nav highlighting
+-->
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TravelBloom</title>
+
+  <style>
+    /* =========================
+       Global Styles
+       ========================= */
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #fff;
+      background: #0b1320;
+    }
+
+    /* =========================
+       Navbar (Centered container on ALL pages)
+       ========================= */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+
+    /* Centering wrapper for navbar content */
+    .navbar-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* Home layout: brand left, links middle, search right */
+    .navbar-inner.home-layout {
+      justify-content: space-between;
+    }
+
+    /* About/Contact layout: center brand + nav links as a group */
+    .navbar-inner.center-layout {
+      justify-content: left;
+    }
+
+    .navbar-inner.center-layout .brand {
+      margin-right: 40px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .brand .logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .nav-links a {
+      color: #fff;
+      text-decoration: none;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-weight: 700;
+      position: relative;
+      opacity: 0.9;
+    }
+
+    .nav-links a:hover {
+      background: rgba(255,255,255,0.12);
+      opacity: 1;
+    }
+
+    /* Active nav highlight */
+    .nav-links a.active {
+      background: rgba(46, 213, 115, 0.22);
+      border: 1px solid rgba(46, 213, 115, 0.35);
+      opacity: 1;
+    }
+
+    .search-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .search-area.hidden {
+    visibility: hidden;       /* keeps space but hides UI */
+    pointer-events: none;     /* prevents clicking tabbing */
+    }
+
+    .search-area input {
+      width: 240px;
+      max-width: 70vw;
+      padding: 9px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.10);
+      color: #fff;
+      outline: none;
+    }
+
+    .search-area input::placeholder { color: rgba(255,255,255,0.7); }
+
+    .btn {
+      padding: 9px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.10);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .btn:hover { background: rgba(255,255,255,0.16); }
+    .btn.primary { background: rgba(46, 213, 115, 0.22); }
+    .btn.primary:hover { background: rgba(46, 213, 115, 0.32); }
+
+    /* =========================
+       Page Sections + Fade Transition
+       ========================= */
+    .page {
+      display: none;
+      min-height: calc(100vh - 70px);
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    .page.active {
+      display: block;
+      animation: fadeInUp 260ms ease forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* =========================
+       Home Page Hero (Task 3)
+       ========================= */
+    .hero {
+      min-height: calc(100vh - 70px);
+      padding: 60px 18px 40px;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255,255,255,0.12), transparent 40%),
+        linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.78)),
+        url("images/home-bg.jpg");
+      background-size: cover;
+      background-position: center;
+    }
+
+    .hero-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.1;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 760px;
+      font-size: 16px;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.88);
+    }
+
+    .chips {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .chip {
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.10);
+      font-size: 14px;
+      color: rgba(255,255,255,0.92);
+      font-weight: 700;
+      user-select: none;
+    }
+
+    /* =========================
+       Results Header
+       ========================= */
+    .results-header {
+      margin-top: 22px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.08);
+      display: none;
+    }
+
+    .results-header .title {
+      font-weight: 900;
+      margin: 0 0 6px;
+      font-size: 15px;
+    }
+
+    .results-header .meta {
+      margin: 0;
+      font-size: 13px;
+      color: rgba(255,255,255,0.85);
+      line-height: 1.4;
+    }
+
+    /* =========================
+       Info Boxes (Empty state + Task 10 time)
+       ========================= */
+    .info-box {
+      margin-top: 14px;
+      color: rgba(255,255,255,0.92);
+      font-size: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px dashed rgba(255,255,255,0.26);
+      background: rgba(255,255,255,0.08);
+      display: none;
+      white-space: pre-line;
+    }
+
+    /* =========================
+       Results Grid + Cards
+       ========================= */
+    .results {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.07);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 38px rgba(0,0,0,0.35);
+    }
+
+    .card-media {
+      position: relative;
+      height: 170px;
+      overflow: hidden;
+    }
+
+    .card-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: scale(1);
+      transition: transform 220ms ease;
+      background: rgba(255,255,255,0.06);
+    }
+
+    .card:hover .card-media img {
+      transform: scale(1.05);
+    }
+
+    .card-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 12px;
+      background: linear-gradient(
+        to top,
+        rgba(0,0,0,0.78),
+        rgba(0,0,0,0.18),
+        rgba(0,0,0,0.00)
+      );
+    }
+
+    .card-badge {
+      align-self: flex-start;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(6px);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+
+    .card-body {
+      padding: 12px 12px 14px;
+    }
+
+    .card-body p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.55;
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* =========================
+       About + Contact Content
+       ========================= */
+    .content-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 38px 18px 48px;
+      color: rgba(255,255,255,0.92);
+    }
+
+    .content-wrap h2 { margin-top: 0; }
+
+    .team {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+
+    .team .member {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .member .name { font-weight: 900; margin-bottom: 6px; }
+    .member .role { color: rgba(255,255,255,0.85); }
+
+    .form {
+      margin-top: 14px;
+      max-width: 680px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .form input, .form textarea {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.10);
+      color: #fff;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .form textarea { min-height: 120px; resize: vertical; }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Task 2: Navbar -->
+  <nav class="navbar" aria-label="Primary navigation">
+    <!-- Default is Home layout on initial load -->
+    <div class="navbar-inner home-layout">
+      <div class="brand" aria-label="Website brand">
+        <div class="logo" aria-hidden="true">🌍</div>
+        <div>TravelBloom</div>
+      </div>
+
+      <div class="nav-links" aria-label="Main menu">
+        <a href="#home" id="linkHome" class="active">Home</a>
+        <a href="#about" id="linkAbout">About Us</a>
+        <a href="#contact" id="linkContact">Contact Us</a>
+      </div>
+
+      <div class="search-area" id="searchArea" aria-label="Search travel recommendations">
+        <input id="searchInput" type="text" placeholder="Search: beach, temple, country, Japan..." />
+        <button class="btn primary" id="btnSearch" type="button">Search</button>
+        <button class="btn" id="btnReset" type="button">Reset</button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Task 3: Home -->
+    <section id="homePage" class="page active">
+      <div class="hero">
+        <div class="hero-inner">
+          <h1>Discover your next destination.</h1>
+          <p>
+            TravelBloom helps you find travel recommendations quickly. Use the search bar to explore
+            beaches, temples, or countries and get curated suggestions with images and descriptions.
+          </p>
+
+          <div class="chips" aria-label="Suggested keywords">
+            <div class="chip">beach</div>
+            <div class="chip">temple</div>
+            <div class="chip">country</div>
+            <div class="chip">Japan</div>
+            <div class="chip">Sydney</div>
+          </div>
+
+          <!-- Results header -->
+          <div id="resultsHeader" class="results-header" aria-live="polite">
+            <p class="title" id="resultsTitle">Results</p>
+            <p class="meta" id="resultsMeta"></p>
+          </div>
+
+          <!-- Task 10: Country time -->
+          <div id="timeBox" class="info-box"></div>
+
+          <!-- Results -->
+          <div id="results" class="results" aria-live="polite"></div>
+
+          <!-- Empty state -->
+          <div id="emptyState" class="info-box"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Task 4: About Us -->
+    <section id="aboutPage" class="page">
+      <div class="content-wrap">
+        <h2>About Us</h2>
+        <p>
+          At TravelBloom, our mission is to make trip planning easier by providing quick travel
+          recommendations based on popular interests. Whether you're looking for a relaxing beach,
+          a historic temple, or inspiration for your next country visit, we’ve got you covered.
+        </p>
+
+        <h3>Our Team</h3>
+        <div class="team">
+          <div class="member">
+            <div class="name">Ava Martinez</div>
+            <div class="role">Product Manager</div>
+          </div>
+          <div class="member">
+            <div class="name">Andres Melendez</div>
+            <div class="role">Full-Stack Developer</div>
+          </div>
+          <div class="member">
+            <div class="name">Sophia Parker</div>
+            <div class="role">UX Designer</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Task 5: Contact Us -->
+    <section id="contactPage" class="page">
+      <div class="content-wrap">
+        <h2>Contact Us</h2>
+        <p>If you have questions or suggestions, send us a message using the form below.</p>
+
+        <form class="form" id="contactForm">
+          <input type="text" id="contactName" name="name" placeholder="Your name" required />
+          <input type="email" id="contactEmail" name="email" placeholder="Your email" required />
+          <textarea id="contactMessage" name="message" placeholder="Your message" required></textarea>
+
+          <div class="form-actions">
+            <button class="btn primary" type="submit">Submit</button>
+            <button class="btn" type="reset">Clear</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script src="travel_recommendation.js"></script>
+</body>
+</html>
